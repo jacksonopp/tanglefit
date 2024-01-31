@@ -3,5 +3,8 @@ run:
 	@templ generate
 	@go run ./cmd/main.go
 
+templ:
+	@templ generate
+
 kill:
 	lsof -ti:3000 | xargs kill

@@ -4,59 +4,121 @@ import "github.com/jacksonopp/tanglefit/view/layout"
 
 templ LoginShow() {
 	@layout.Base("Log in | Tanglefit") {
-		<div class="w-full h-screen bg-cover bg-center bg-no-repeat" style="background-image:url('/placeholder.svg')">
+		<div class="w-full h-screen bg-cover bg-center bg-no-repeat" style="background: no-repeat url('/static/images/barbell.jpg') rgba(69, 10, 10, 0.7); background-blend-mode: multiply; background-size: cover; background-position: center;">
 			<div class="flex items-center justify-center h-full">
 				<div class="mx-auto w-[350px] space-y-6">
 					<div class="space-y-2 text-center">
-						<h1 class="text-3xl font-bold">Login</h1>
-						<p class="text-gray-500 dark:text-gray-400">Enter your username and password to login to your account</p>
+						<h1 class="text-gray-200 text-3xl font-bold">Login</h1>
+						<p class="text-gray-200 ">Enter your username and password to login to your account</p>
 					</div>
-					<div class="space-y-4">
-						<div class="space-y-2">
-							<label
-								class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-								for="username"
-							>
-								Username
-							</label>
-							<input
-								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-								id="username"
-								required=""
-							/>
-						</div>
-						<div class="space-y-2">
-							<label
-								class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-								for="password"
-							>
-								Password
-							</label>
-							<input
-								type="password"
-								class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-								id="password"
-								required=""
-							/>
-						</div>
-						<button
-							class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-full"
-							type="submit"
-						>
-							Login
-						</button>
-						<button class="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 w-full">
-							Login with Google
-						</button>
-					</div>
-					<div class="mt-4 text-center text-sm">
-						Don't have an account?
-						<a class="underline" href="#" rel="ugc">
-							Sign up
-						</a>
+					@LoginForm(ErrorNone, defaultFormData)
+					<div class="text-gray-200 mt-4 text-center text-sm">
+						<p>
+							Don't have an account?
+							<a class="underline" href="#" rel="ugc">
+								Sign up
+							</a>
+						</p>
 					</div>
 				</div>
 			</div>
 		</div>
 	}
+}
+
+type LoginFormError string
+
+const (
+	ErrorNone       LoginFormError = "none"
+	ErrorDemo       LoginFormError = "demo"
+	ErrorNoUsername LoginFormError = "no_username"
+	ErrorNoPassword LoginFormError = "no_password"
+)
+
+type LoginFormData struct {
+	username string
+}
+
+func NewLoginFormData(opts ...func(*LoginFormData)) *LoginFormData {
+	data := &LoginFormData{}
+	for _, o := range opts {
+		o(data)
+	}
+	return data
+}
+
+func WithUsername(username string) func(*LoginFormData) {
+	return func(l *LoginFormData) {
+		l.username = username
+	}
+}
+
+var defaultFormData = LoginFormData{}
+
+templ LoginForm(errors LoginFormError, data LoginFormData) {
+	if (errors == ErrorDemo) {
+		<div>
+			Demo error
+		</div>
+	}
+	<form hx-post="/api/login" hx-swap="outerHTML">
+		<div class="space-y-4">
+			<div class="space-y-2">
+				<label
+					class="text-gray-200 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					for="username"
+				>
+					Username
+				</label>
+				if data.username != "" {
+					<input
+						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+						id="username"
+						name="username"
+						required
+						value={ data.username }
+					/>
+				} else {
+					<input
+						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+						id="username"
+						name="username"
+						required
+					/>
+				}
+				if (errors == ErrorNoUsername) {
+					<p class="text-red-500 text-sm">
+						Please enter a username
+					</p>
+				}
+			</div>
+			<div class="space-y-2">
+				<label
+					class="text-gray-200 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					for="password"
+				>
+					Password
+				</label>
+				<input
+					type="password"
+					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+					id="password"
+					name="password"
+					required
+				/>
+				if (errors == ErrorNoPassword) {
+					<p class="text-red-500 text-sm">
+						Please enter a password
+					</p>
+				}
+			</div>
+			<button
+				class="text-gray-200 bg-gray-900 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green hover:bg-green-900/50 h-10 px-4 py-2 w-full"
+				type="submit"
+			>
+				Login
+				<img class="htmx-indicator size-4" src="/static/images/spinner.svg"/>
+			</button>
+		</div>
+	</form>
 }
