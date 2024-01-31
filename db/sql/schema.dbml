@@ -1,0 +1,35 @@
+enum role {
+  member
+  owner
+  admin
+  instructor
+}
+
+Table users {
+  id int [pk, increment]
+  email varchar [unique, not null]
+  password varchar [not null]
+  created_at timestamp
+  role role
+
+  indexes {
+    email
+  }
+}
+
+Table gyms {
+  id int [pk, increment]
+  name varchar [not null]
+  owner_id int [ref: - users.id]
+  member_id int [ref: > users.id]
+}
+
+Table classes {
+  id int [pk, increment]
+  gym_id int [ref: > gyms.id]
+  attendee_id int [ref: > users.id]
+  instructor_id int [ref: - users.id]
+  date timestamp [not null]
+  max_attendees int [not null]
+  class_type varchar
+}

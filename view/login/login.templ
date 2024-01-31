@@ -15,7 +15,7 @@ templ LoginShow() {
 					<div class="text-gray-200 mt-4 text-center text-sm">
 						<p>
 							Don't have an account?
-							<a class="underline" href="#" rel="ugc">
+							<a class="underline" href="/signup" rel="ugc">
 								Sign up
 							</a>
 						</p>
@@ -31,12 +31,12 @@ type LoginFormError string
 const (
 	ErrorNone       LoginFormError = "none"
 	ErrorDemo       LoginFormError = "demo"
-	ErrorNoUsername LoginFormError = "no_username"
+	ErrorNoEmail    LoginFormError = "no_email"
 	ErrorNoPassword LoginFormError = "no_password"
 )
 
 type LoginFormData struct {
-	username string
+	email string
 }
 
 func NewLoginFormData(opts ...func(*LoginFormData)) *LoginFormData {
@@ -47,9 +47,9 @@ func NewLoginFormData(opts ...func(*LoginFormData)) *LoginFormData {
 	return data
 }
 
-func WithUsername(username string) func(*LoginFormData) {
+func WithEmail(email string) func(*LoginFormData) {
 	return func(l *LoginFormData) {
-		l.username = username
+		l.email = email
 	}
 }
 
@@ -66,27 +66,27 @@ templ LoginForm(errors LoginFormError, data LoginFormData) {
 			<div class="space-y-2">
 				<label
 					class="text-gray-200 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-					for="username"
+					for="email"
 				>
-					Username
+					Email
 				</label>
-				if data.username != "" {
+				if data.email != "" {
 					<input
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-						id="username"
-						name="username"
+						id="email"
+						name="email"
 						required
-						value={ data.username }
+						value={ data.email }
 					/>
 				} else {
 					<input
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-						id="username"
-						name="username"
+						id="email"
+						name="email"
 						required
 					/>
 				}
-				if (errors == ErrorNoUsername) {
+				if (errors == ErrorNoEmail) {
 					<p class="text-red-500 text-sm">
 						Please enter a username
 					</p>

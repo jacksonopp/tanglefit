@@ -39,7 +39,7 @@ func LoginShow() templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"text-gray-200 mt-4 text-center text-sm\"><p>Don't have an account? <a class=\"underline\" href=\"#\" rel=\"ugc\">Sign up</a></p></div></div></div></div>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"text-gray-200 mt-4 text-center text-sm\"><p>Don't have an account? <a class=\"underline\" href=\"/signup\" rel=\"ugc\">Sign up</a></p></div></div></div></div>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -64,12 +64,12 @@ type LoginFormError string
 const (
 	ErrorNone       LoginFormError = "none"
 	ErrorDemo       LoginFormError = "demo"
-	ErrorNoUsername LoginFormError = "no_username"
+	ErrorNoEmail    LoginFormError = "no_email"
 	ErrorNoPassword LoginFormError = "no_password"
 )
 
 type LoginFormData struct {
-	username string
+	email string
 }
 
 func NewLoginFormData(opts ...func(*LoginFormData)) *LoginFormData {
@@ -80,9 +80,9 @@ func NewLoginFormData(opts ...func(*LoginFormData)) *LoginFormData {
 	return data
 }
 
-func WithUsername(username string) func(*LoginFormData) {
+func WithEmail(email string) func(*LoginFormData) {
 	return func(l *LoginFormData) {
-		l.username = username
+		l.email = email
 	}
 }
 
@@ -107,16 +107,16 @@ func LoginForm(errors LoginFormError, data LoginFormData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/api/login\" hx-swap=\"outerHTML\"><div class=\"space-y-4\"><div class=\"space-y-2\"><label class=\"text-gray-200 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70\" for=\"username\">Username</label> ")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/api/login\" hx-swap=\"outerHTML\"><div class=\"space-y-4\"><div class=\"space-y-2\"><label class=\"text-gray-200 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70\" for=\"email\">Email</label> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if data.username != "" {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<input class=\"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50\" id=\"username\" name=\"username\" required value=\"")
+		if data.email != "" {
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<input class=\"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50\" id=\"email\" name=\"email\" required value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(data.username))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(data.email))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -125,12 +125,12 @@ func LoginForm(errors LoginFormError, data LoginFormData) templ.Component {
 				return templ_7745c5c3_Err
 			}
 		} else {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<input class=\"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50\" id=\"username\" name=\"username\" required>")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<input class=\"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50\" id=\"email\" name=\"email\" required>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		if errors == ErrorNoUsername {
+		if errors == ErrorNoEmail {
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p class=\"text-red-500 text-sm\">Please enter a username</p>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err

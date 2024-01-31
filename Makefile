@@ -8,3 +8,15 @@ templ:
 
 kill:
 	lsof -ti:3000 | xargs kill
+
+cm:
+	migrate create -ext sql -dir db/migrations -seq "$(name)"
+
+dbdown:
+	migrate -database "postgres://postgres:postgres@localhost:5438/tanglefit?sslmode=disable" -path ./db/migrations down
+
+dbdown-one:
+	migrate -database "postgres://postgres:postgres@localhost:5438/tanglefit?sslmode=disable" -path ./db/migrations down "$(v)"
+
+dbup:
+	migrate -database "postgres://postgres:postgres@localhost:5438/tanglefit?sslmode=disable" -path ./db/migrations up

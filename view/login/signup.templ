@@ -1,0 +1,85 @@
+package login
+
+import "github.com/jacksonopp/tanglefit/view/layout"
+
+templ SignUpShow() {
+	@layout.Base("Sign Up | Tanglefit") {
+		<div class="w-full h-screen bg-cover bg-center bg-no-repeat" style="background: no-repeat url('/static/images/barbell.jpg') rgba(69, 10, 10, 0.7); background-blend-mode: multiply; background-size: cover; background-position: center;">
+			<div class="flex items-center justify-center h-full">
+				<div class="mx-auto w-[350px] space-y-6">
+					<div class="space-y-2 text-center">
+						<h1 class="text-gray-200 text-3xl font-bold">Sign Up</h1>
+						<p class="text-gray-200 ">Sign up for a new account</p>
+					</div>
+					@SignupForm()
+					<div class="text-gray-200 mt-4 text-center text-sm">
+						<p>
+							Already have an account?
+							<a class="underline" href="/login" rel="ugc">
+								Log in
+							</a>
+						</p>
+					</div>
+				</div>
+			</div>
+		</div>
+	}
+}
+
+templ SignupForm() {
+	<form hx-post="/api/login" hx-swap="outerHTML">
+		<div class="space-y-4">
+			<div class="space-y-2">
+				<label
+					class="text-gray-200 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					for="email"
+				>
+					Email
+				</label>
+				<input
+					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+					id="email"
+					name="email"
+					required
+				/>
+			</div>
+			<div class="space-y-2">
+				<label
+					class="text-gray-200 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					for="password"
+				>
+					Password
+				</label>
+				<input
+					type="password"
+					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+					id="password"
+					name="password"
+					required
+				/>
+			</div>
+			<div class="space-y-2">
+				<label
+					class="text-gray-200 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+					for="confirm-password"
+				>
+					Confirm Password
+				</label>
+				<input
+					type="confirm-password"
+					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+					id="confirm-password"
+					name="password"
+					required
+				/>
+			</div>
+			<button
+				class="text-gray-200 bg-gray-900 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green hover:bg-green-900/50 h-10 px-4 py-2 w-full"
+				type="submit"
+			>
+				Login
+				<img class="htmx-indicator size-4" src="/static/images/spinner.svg"/>
+			</button>
+		</div>
+	</form>
+}
