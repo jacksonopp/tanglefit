@@ -1,0 +1,15 @@
+package layout
+
+
+
+templ Base(title string) {
+	if (title == "") {
+		title = "Tanglefit"
+	}
+	<html lang="en">
+    @Head(title)
+		<body>
+			{ children... }
+		</body>
+	</html>
+}
