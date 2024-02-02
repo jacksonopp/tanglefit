@@ -1,6 +1,9 @@
-package login
+package signup
 
-import "github.com/jacksonopp/tanglefit/view/layout"
+import (
+	"github.com/jacksonopp/tanglefit/view/layout"
+	"github.com/jacksonopp/tanglefit/view/components"
+)
 
 templ SignUpShow() {
 	@layout.Base("Sign Up | Tanglefit") {
@@ -11,7 +14,7 @@ templ SignUpShow() {
 						<h1 class="text-gray-200 text-3xl font-bold">Sign Up</h1>
 						<p class="text-gray-200 ">Sign up for a new account</p>
 					</div>
-					@SignupForm()
+					@SignUpForm(ErrorNone, defaultFormData)
 					<div class="text-gray-200 mt-4 text-center text-sm">
 						<p>
 							Already have an account?
@@ -26,22 +29,75 @@ templ SignUpShow() {
 	}
 }
 
-templ SignupForm() {
-	<form hx-post="/api/login" hx-swap="outerHTML">
+type SignUpFormError int
+
+const (
+	ErrorNone SignUpFormError = iota
+	ErrorPasswordMismatch
+	ErrorPasswordShort
+	ErrorInvalidEmail
+	ErrorUnknown
+	// TODO handle succes better
+	Success
+)
+
+type SignUpFormData struct {
+	email string
+}
+
+func NewSignUpFormData(opts ...func(*SignUpFormData)) *SignUpFormData {
+	data := &SignUpFormData{}
+	for _, o := range opts {
+		o(data)
+	}
+	return data
+}
+
+func WithEmail(email string) func(*SignUpFormData) {
+	return func(s *SignUpFormData) {
+		s.email = email
+	}
+}
+
+var defaultFormData = SignUpFormData{}
+
+templ SignUpForm(errors SignUpFormError, data SignUpFormData) {
+	<form hx-post="/api/signup" hx-indicator="#form-indicator" hx-swap="outerHTML">
+		if errors == ErrorUnknown {
+			@components.ErrorMessage("Hmm... something went wrong. Please try again")
+		}
+		if errors == Success {
+			@components.ErrorMessage("Woohoo!")
+		}
 		<div class="space-y-4">
 			<div class="space-y-2">
-				<label
-					class="text-gray-200 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-					for="email"
-				>
-					Email
-				</label>
-				<input
-					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-					id="email"
-					name="email"
-					required
-				/>
+				<div class="space-y-2">
+					<label
+						class="text-gray-200 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+						for="email"
+						type="email"
+					>
+						Email
+					</label>
+					<div class="flex flex-row-reverse h-10 w-full rounded-md border border-input bg-background text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
+						<input
+							class="w-full px-3 py-2 "
+							id="email"
+							name="email"
+							required
+							autocomplete="off"
+							hx-post="/api/signup/validate-email"
+							hx-trigger="blur"
+							hx-swap="innerHTML"
+							hx-target="#email-err"
+							hx-indicator="#email-indicator"
+						/>
+						<img class="absolute saturate-50" id="email-indicator" src="/static/images/spinner.svg"/>
+					</div>
+					<div id="email-err">
+						// email goes here
+					</div>
+				</div>
 			</div>
 			<div class="space-y-2">
 				<label
@@ -66,20 +122,25 @@ templ SignupForm() {
 					Confirm Password
 				</label>
 				<input
-					type="confirm-password"
+					type="password"
 					class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 					id="confirm-password"
-					name="password"
+					name="confirm-password"
 					required
 				/>
+				if errors == ErrorPasswordMismatch {
+					<p class="text-red-500 text-sm">Passwords must match</p>
+				}
 			</div>
 			<button
 				class="text-gray-200 bg-gray-900 inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 bg-green hover:bg-green-900/50 h-10 px-4 py-2 w-full"
 				type="submit"
+				id="submit"
 			>
 				Login
-				<img class="htmx-indicator size-4" src="/static/images/spinner.svg"/>
+				<img id="form-indicator" class="htmx-indicator size-4" src="/static/images/spinner.svg"/>
 			</button>
 		</div>
 	</form>
+	<script src="/static/js/sign-up-error-handler.js"></script>
 }

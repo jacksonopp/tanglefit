@@ -21,7 +21,6 @@ func NewLoginHandler(app *echo.Echo, db *db.Queries, ctx context.Context) *Login
 func (h LoginHandler) HandleAllRoutes() {
 	// pages
 	h.app.GET("/login", h.HandleLoginShow)
-	h.app.GET("/signup", h.HandleSignupShow)
 
 	// apis
 	h.app.POST("/api/login", h.HandleUserLogin)
@@ -31,21 +30,32 @@ func (h LoginHandler) HandleLoginShow(c echo.Context) error {
 	return render(c, login.LoginShow())
 }
 
-func (h LoginHandler) HandleSignupShow(c echo.Context) error {
-	return render(c, login.SignUpShow())
-}
-
 func (h LoginHandler) HandleUserLogin(c echo.Context) error {
 	email := c.FormValue("email")
 	password := c.FormValue("password")
-	data := login.NewLoginFormData(login.WithEmail(email))
+	data := login.NewLoginFormData()
 
 	if email == "" {
 		return render(c, login.LoginForm(login.ErrorNoEmail, *data))
 	}
 	if password == "" {
+		data.Email = email
 		return render(c, login.LoginForm(login.ErrorNoPassword, *data))
 	}
+
+	user, err := h.db.GetUserByEmail(c.Request().Context(), email)
+	if err != nil {
+		data.Email = email
+		return render(c, login.LoginForm(login.ErrorEmailNotFound, *data))
+	}
+
+	ok := comparePasswordHash(password, user.Password)
+	if !ok {
+		data.Email = email
+		return render(c, login.LoginForm(login.ErrorWrongPassword, *data))
+	}
+
+	// cookie := new(http.Cookie)
 
 	return render(c, login.LoginForm(login.ErrorNone, *data))
 }

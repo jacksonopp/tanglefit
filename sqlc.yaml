@@ -3,7 +3,6 @@ sql:
   - engine: "postgresql"
     schema: "./db/sql/schema.sql"
     queries: "./db/sql"
-    emit_json_tags: true
     gen:
       go:
         package: "db"

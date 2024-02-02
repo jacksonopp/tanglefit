@@ -6,6 +6,9 @@ run:
 templ:
 	@templ generate
 
+sqlc:
+	@sqlc generate
+
 kill:
 	lsof -ti:3000 | xargs kill
 

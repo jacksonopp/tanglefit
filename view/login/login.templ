@@ -1,6 +1,9 @@
 package login
 
-import "github.com/jacksonopp/tanglefit/view/layout"
+import (
+	"github.com/jacksonopp/tanglefit/view/layout"
+	"github.com/jacksonopp/tanglefit/view/components"
+)
 
 templ LoginShow() {
 	@layout.Base("Log in | Tanglefit") {
@@ -26,17 +29,18 @@ templ LoginShow() {
 	}
 }
 
-type LoginFormError string
+type LoginFormError int
 
 const (
-	ErrorNone       LoginFormError = "none"
-	ErrorDemo       LoginFormError = "demo"
-	ErrorNoEmail    LoginFormError = "no_email"
-	ErrorNoPassword LoginFormError = "no_password"
+	ErrorNone LoginFormError = iota
+	ErrorNoEmail
+	ErrorNoPassword
+	ErrorWrongPassword
+	ErrorEmailNotFound
 )
 
 type LoginFormData struct {
-	email string
+	Email string
 }
 
 func NewLoginFormData(opts ...func(*LoginFormData)) *LoginFormData {
@@ -49,19 +53,20 @@ func NewLoginFormData(opts ...func(*LoginFormData)) *LoginFormData {
 
 func WithEmail(email string) func(*LoginFormData) {
 	return func(l *LoginFormData) {
-		l.email = email
+		l.Email = email
 	}
 }
 
 var defaultFormData = LoginFormData{}
 
 templ LoginForm(errors LoginFormError, data LoginFormData) {
-	if (errors == ErrorDemo) {
-		<div>
-			Demo error
-		</div>
-	}
 	<form hx-post="/api/login" hx-swap="outerHTML">
+		if errors == ErrorWrongPassword {
+			@components.ErrorMessage("Looks like that password doesn't match that email.")
+		}
+		if errors == ErrorEmailNotFound {
+			@components.ErrorMessage("Looks like we couldn't find a user with that email.")
+		}
 		<div class="space-y-4">
 			<div class="space-y-2">
 				<label
@@ -70,13 +75,13 @@ templ LoginForm(errors LoginFormError, data LoginFormData) {
 				>
 					Email
 				</label>
-				if data.email != "" {
+				if data.Email != "" {
 					<input
 						class="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
 						id="email"
 						name="email"
 						required
-						value={ data.email }
+						value={ data.Email }
 					/>
 				} else {
 					<input
@@ -86,10 +91,8 @@ templ LoginForm(errors LoginFormError, data LoginFormData) {
 						required
 					/>
 				}
-				if (errors == ErrorNoEmail) {
-					<p class="text-red-500 text-sm">
-						Please enter a username
-					</p>
+				if errors == ErrorNoEmail {
+					@components.ErrorMessage("Please enter a username")
 				}
 			</div>
 			<div class="space-y-2">
@@ -106,10 +109,8 @@ templ LoginForm(errors LoginFormError, data LoginFormData) {
 					name="password"
 					required
 				/>
-				if (errors == ErrorNoPassword) {
-					<p class="text-red-500 text-sm">
-						Please enter a password
-					</p>
+				if errors == ErrorNoPassword {
+					@components.ErrorMessage("Please enter a password")
 				}
 			</div>
 			<button

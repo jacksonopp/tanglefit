@@ -3,7 +3,9 @@ package main
 import (
 	"context"
 	"database/sql"
-	"log"
+	"os"
+
+	"github.com/labstack/gommon/log"
 
 	"github.com/golang-migrate/migrate/v4"
 	"github.com/golang-migrate/migrate/v4/database/postgres"
@@ -15,37 +17,33 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// go:embed schema.sql
-var ddl string
-
 func main() {
-	database, err := migrateDb()
+	_, err := migrateDb()
 	if err != nil && err != migrate.ErrNoChange {
-		log.Fatalln("error migrating database:", err)
+		log.Error("error migrating database:", err)
+		os.Exit(1)
 	}
 
-	queries, err := setupDb(database)
+	sqldb, err := sql.Open("postgres", "port=5438 user=postgres password=postgres dbname=tanglefit sslmode=disable")
 	if err != nil {
-		log.Fatalln("error setting up database", err)
+		log.Error("error setting up database", err)
+		os.Exit(1)
 	}
+	defer sqldb.Close()
+
+	queries := db.New(sqldb)
 	ctx := context.Background()
 
 	app := setupApp()
-
-	loginHandler := handlers.NewLoginHandler(app, queries, ctx)
-	loginHandler.HandleAllRoutes()
-
-	app.Start(":3000")
-}
-
-func setupDb(database *sql.DB) (*db.Queries, error) {
-	sqldb, err := sql.Open("postgres", "port=5438 user=postgres password=postgres dbmane=tanglefit sslmode=disable")
-	if err != nil {
-		return nil, err
+	if l, ok := app.Logger.(*log.Logger); ok {
+		l.SetHeader("${time_rfc3339} ${level}")
+		l.SetLevel(log.DEBUG)
 	}
 
-	queries := db.New(sqldb)
-	return queries, nil
+	handlers.NewLoginHandler(app, queries, ctx).HandleAllRoutes()
+	handlers.NewSignupHandler(app, queries, ctx).HandleAllRoutes()
+
+	app.Start(":3000")
 }
 
 func setupApp() *echo.Echo {

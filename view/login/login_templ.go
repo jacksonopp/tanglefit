@@ -10,7 +10,10 @@ import "context"
 import "io"
 import "bytes"
 
-import "github.com/jacksonopp/tanglefit/view/layout"
+import (
+	"github.com/jacksonopp/tanglefit/view/components"
+	"github.com/jacksonopp/tanglefit/view/layout"
+)
 
 func LoginShow() templ.Component {
 	return templ.ComponentFunc(func(ctx context.Context, templ_7745c5c3_W io.Writer) (templ_7745c5c3_Err error) {
@@ -59,17 +62,18 @@ func LoginShow() templ.Component {
 	})
 }
 
-type LoginFormError string
+type LoginFormError int
 
 const (
-	ErrorNone       LoginFormError = "none"
-	ErrorDemo       LoginFormError = "demo"
-	ErrorNoEmail    LoginFormError = "no_email"
-	ErrorNoPassword LoginFormError = "no_password"
+	ErrorNone LoginFormError = iota
+	ErrorNoEmail
+	ErrorNoPassword
+	ErrorWrongPassword
+	ErrorEmailNotFound
 )
 
 type LoginFormData struct {
-	email string
+	Email string
 }
 
 func NewLoginFormData(opts ...func(*LoginFormData)) *LoginFormData {
@@ -82,7 +86,7 @@ func NewLoginFormData(opts ...func(*LoginFormData)) *LoginFormData {
 
 func WithEmail(email string) func(*LoginFormData) {
 	return func(l *LoginFormData) {
-		l.email = email
+		l.Email = email
 	}
 }
 
@@ -101,22 +105,32 @@ func LoginForm(errors LoginFormError, data LoginFormData) templ.Component {
 			templ_7745c5c3_Var3 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		if errors == ErrorDemo {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div>Demo error</div>")
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/api/login\" hx-swap=\"outerHTML\">")
+		if templ_7745c5c3_Err != nil {
+			return templ_7745c5c3_Err
+		}
+		if errors == ErrorWrongPassword {
+			templ_7745c5c3_Err = components.ErrorMessage("Looks like that password doesn't match that email.").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 		}
-		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<form hx-post=\"/api/login\" hx-swap=\"outerHTML\"><div class=\"space-y-4\"><div class=\"space-y-2\"><label class=\"text-gray-200 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70\" for=\"email\">Email</label> ")
+		if errors == ErrorEmailNotFound {
+			templ_7745c5c3_Err = components.ErrorMessage("Looks like we couldn't find a user with that email.").Render(ctx, templ_7745c5c3_Buffer)
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+		}
+		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"space-y-4\"><div class=\"space-y-2\"><label class=\"text-gray-200 text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70\" for=\"email\">Email</label> ")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
-		if data.email != "" {
+		if data.Email != "" {
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<input class=\"flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50\" id=\"email\" name=\"email\" required value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(data.email))
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(data.Email))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -131,7 +145,7 @@ func LoginForm(errors LoginFormError, data LoginFormData) templ.Component {
 			}
 		}
 		if errors == ErrorNoEmail {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p class=\"text-red-500 text-sm\">Please enter a username</p>")
+			templ_7745c5c3_Err = components.ErrorMessage("Please enter a username").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -141,7 +155,7 @@ func LoginForm(errors LoginFormError, data LoginFormData) templ.Component {
 			return templ_7745c5c3_Err
 		}
 		if errors == ErrorNoPassword {
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<p class=\"text-red-500 text-sm\">Please enter a password</p>")
+			templ_7745c5c3_Err = components.ErrorMessage("Please enter a password").Render(ctx, templ_7745c5c3_Buffer)
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
